@@ -1,0 +1,42 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+{% block content %}
+    {{ block.super }}
+    <div id="content-main">
+        <div class="module">
+            <el-card class="box-card">
+                <div slot="header" class="card-header clearfix">
+                    <h1>研究团队</h1>
+                </div>
+                <article>
+                    <p>
+                        研究团队详细说明
+                    </p>
+                </article>
+            </el-card>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        #content-main p {
+            font-size: 1.2em;
+            text-indent: 2em;
+            text-align: left;
+            padding-top: 2em;
+            padding-bottom: 2em;
+            line-height: 1.8em;
+        }
+
+        .box-card .card-header {
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .box-card h1 {
+            font-size: 3em;
+        }
+    </style>
+{% endblock %}

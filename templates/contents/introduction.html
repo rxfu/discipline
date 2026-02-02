@@ -1,0 +1,43 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+{% block content %}
+    {{ block.super }}
+    <div id="content-main">
+        <div class="module">
+            <el-card class="box-card">
+                <div slot="header" class="card-header clearfix">
+                    <h1>中心简介</h1>
+                </div>
+                <article>
+                    <p>
+                        经学校研究，广西师范大学决定成立学科数据分析中心，挂靠研究生院，按校级研究机构实行管理。学科数据分析中心主任由研究生院分管学科建设副院长担任，
+                        副主任由学科建设办公室副主任及图书馆学科服务部主任担任，成员包括图书馆、社科处、科技处、教务处、人事处相关工作人员。
+                    </p>
+                </article>
+            </el-card>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        #content-main p {
+            font-size: 1.2em;
+            text-indent: 2em;
+            text-align: left;
+            padding-top: 2em;
+            padding-bottom: 2em;
+            line-height: 1.8em;
+        }
+
+        .box-card .card-header {
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .box-card h1 {
+            font-size: 3em;
+        }
+    </style>
+{% endblock %}

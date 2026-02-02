@@ -9,10 +9,12 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+
 import os
 from pathlib import Path
 
 import environ
+from sqlalchemy import false
 
 env = environ.Env(
     # set casting, default value
@@ -23,22 +25,33 @@ env = environ.Env(
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Take environment variables from .env file
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 # Application definition
 
 INSTALLED_APPS = [
+    "simpleui",
+    "rest_framework",
+    "corsheaders",
+    "django_json_widget",
+    "import_export",
+    "accounts.apps.AccountsConfig",
+    "subjects.apps.SubjectsConfig",
+    "commons.apps.CommonsConfig",
+    "indicators.apps.IndicatorsConfig",
+    "contents.apps.ContentsConfig",
+    "django_comment_migrate",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -48,6 +61,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -62,8 +76,7 @@ ROOT_URLCONF = "discipline.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates']
-        ,
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -80,9 +93,7 @@ WSGI_APPLICATION = "discipline.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": env.dict("MYSQLDB")
-}
+DATABASES = {"default": env.dict("MYSQLDB", cast={"value": str}, default={})}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -117,8 +128,116 @@ USE_TZ = env("USE_TZ")
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Account user model
+AUTH_USER_MODEL = "accounts.User"
+
+DCM_COMMENT_KEY = "verbose_name"  # 注释字段，默认是help_text
+DCM_TABLE_COMMENT_KEY = "verbose_name"  # 表注释字段
+DCM_BACKEND = {  # 如果自定义了数据的engine，可以使用该配置
+    "my-engine": "django_comment_migrate.backends.mysql.CommentMigration"
+}
+# DCM_COMMENT_APP = ["app"]  # 如果不配置则默认生成所有表的注释
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+# SimpleUI Configurations
+SIMPLEUI_LOGIN_PARTICLES = False
+SIMPLEUI_HOME_INFO = False
+SIMPLEUI_HOME_PAGE = "/admin/contents/news/introduction"
+SIMPLEUI_CONFIG = {
+    "system_keep": True,
+    "menu_display": [
+        "中心概况",
+        "学科概况",
+        "专项分析",
+        "情报消息",
+        "数据与资源",
+        "成果推广",
+        "内容管理",
+        "基础数据管理",
+        "学科管理",
+        "指标管理",
+        "用户管理",
+        "认证和授权",
+    ],
+    "dynamic": True,
+    "menus": [
+        {
+            "name": "中心概况",
+            "icon": "fas fa-code",
+            "models": [
+                {"name": "中心简介", "url": "/admin/contents/news/introduction"},
+                {"name": "组织架构", "url": "/admin/contents/news/organization"},
+                {"name": "研究团队", "url": "/admin/contents/news/team"},
+            ],
+        },
+        {
+            "name": "学科概况",
+            "icon": "fas fa-code",
+            "models": [
+                {"name": "学科水平概览", "url": "/admin/indicators/subjectdata/pivot"},
+                {
+                    "name": "学科布局演化",
+                    "url": "/admin/indicators/subjectdata/quadrant",
+                },
+                {"name": "学科布局排名", "url": "/admin/indicators/subjectdata/rank"},
+            ],
+        },
+        {
+            "name": "专项分析",
+            "icon": "fas fa-code",
+            "models": [
+                {"name": "单学科分析", "url": "/admin/indicators/subjectdata/bar"},
+                {"name": "学科趋势分析", "url": "/admin/indicators/subjectdata/trend"},
+            ],
+        },
+        {
+            "name": "情报消息",
+            "icon": "fas fa-code",
+            "models": [
+                {"name": "新闻", "url": "/admin/contents/news/news"},
+                {"name": "学科发展信息", "url": "/admin/contents/news/development"},
+                {"name": "双一流建设", "url": "/admin/contents/news/initiative"},
+            ],
+        },
+        {
+            "name": "数据与资源",
+            "icon": "fas fa-code",
+            "models": [
+                {
+                    "name": "人才培养",
+                    "url": "/admin/indicators/indicator/101000/search",
+                },
+                {
+                    "name": "平台项目",
+                    "url": "/admin/indicators/indicator/102000/search",
+                },
+                {
+                    "name": "成果获奖",
+                    "url": "/admin/indicators/indicator/103000/search",
+                },
+                {
+                    "name": "学术论文",
+                    "url": "/admin/indicators/indicator/104000/search",
+                },
+                {
+                    "name": "高端人才",
+                    "url": "/admin/indicators/indicator/105000/search",
+                },
+            ],
+        },
+    ],
+}

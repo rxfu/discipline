@@ -1,0 +1,114 @@
+{% extends 'admin/base_site.html' %}
+{% load static indicator_extras %}
+{% block content %}
+    {{ block.super }}
+    <div id="content-main">
+        <div class="module">
+            <el-card class="box-card">
+                <div slot="header" class="card-header clearfix">
+                    <h1>{{ title }}</h1>
+                </div>
+                <article>
+                    <!-- 统计图 -->
+                    <canvas id="myChart" width="400" height="180"></canvas>
+                </article>
+            </el-card>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+    {{ chart_data|json_script:"chart-data" }}
+    <script>
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: JSON.parse(chartData),
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '学科趋势分析',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '数据量',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '年份',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'js/chart.umd.min.js' %}"></script>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        #content-main p {
+            font-size: 1.2em;
+            text-indent: 2em;
+            text-align: left;
+            padding-top: 2em;
+            padding-bottom: 2em;
+            line-height: 1.8em;
+        }
+
+        .box-card .card-header {
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .box-card h1 {
+            font-size: 3em;
+        }
+    </style>
+{% endblock %}

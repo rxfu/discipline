@@ -1,0 +1,135 @@
+{% extends 'admin/base_site.html' %}
+{% load static indicator_extras %}
+{% block content %}
+    {{ block.super }}
+    <div id="content-main">
+        <div class="module">
+            <el-card class="box-card">
+                <div slot="header" class="card-header clearfix">
+                    <h1>{{ title }}</h1>
+                </div>
+                <article>
+                    <!-- 控制面板 -->
+                    <div class="pivot-controls">
+                        <form method="get" id="pivotForm"
+                              style="padding: 20px; background: #f8f9fa; margin-bottom: 20px; border-radius: 5px;">
+                            <div class="control-group" style="width: 200px; float: left;">
+                                <label for="row_field">行标签字段:</label>
+                                <select name="row_field" id="row_field" onchange="this.form.submit()">
+                                    {% for field, name in row_fields %}
+                                        <option value="{{ field }}"
+                                                {% if selected_row_field == field %}selected{% endif %}>
+                                            {{ name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                <label for="col_field">列标签字段:</label>
+                                <select name="col_field" id="col_field" onchange="this.form.submit()">
+                                    {% for field, name in col_fields %}
+                                        <option value="{{ field }}"
+                                                {% if selected_col_field == field %}selected{% endif %}>
+                                            {{ name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 数据透视表 -->
+                    {% if pivot_data.row_labels and pivot_data.col_labels %}
+                        <div class="pivot-table-container">
+                            <table class="pivot-table">
+                                <thead>
+                                <tr>
+                                    <th></th>
+                                    {% for col_label in pivot_data.col_labels %}
+                                        <th>{{ col_label }}</th>
+                                    {% endfor %}
+                                    <th class="col-total-header">行总计</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row_label in pivot_data.row_labels %}
+                                    <tr>
+                                        <td class="row-header">{{ row_label }}</td>
+                                        {% for col_label in pivot_data.col_labels %}
+                                            <td class="data-cell">
+                                                {% if pivot_data.data|get_item:row_label and pivot_data.data|get_item:row_label|get_item:col_label %}
+                                                    {{ pivot_data.data|get_item:row_label|get_item:col_label }}
+                                                {% else %}
+                                                    0
+                                                {% endif %}
+                                            </td>
+                                        {% endfor %}
+                                        <td class="row-total-header">
+                                            {% if pivot_data.row_totals|get_item:row_label %}
+                                                {{ pivot_data.row_totals|get_item:row_label }}
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                <tr>
+                                    <td class="col-total-header">列总计</td>
+                                    {% for col_label in pivot_data.col_labels %}
+                                        <td class="col-total-header">
+                                            {% if pivot_data.col_totals|get_item:col_label %}
+                                                {{ pivot_data.col_totals|get_item:col_label }}
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                    <td class="grand-total">{{ pivot_data.grand_total }}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 摘要信息 -->
+                        <div class="pivot-summary">
+                            <strong>数据摘要:</strong>
+                            共计 {{ pivot_data.grand_total }} 条记录，
+                            行维度包含 {{ pivot_data.row_labels|length }} 个分类，
+                            列维度包含 {{ pivot_data.col_labels|length }} 个分类。
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-table"></i>
+                            <h3>暂无数据</h3>
+                            <p>请先添加学科数据后再查看透视表</p>
+                        </div>
+                    {% endif %}
+                </article>
+            </el-card>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        #content-main p {
+            font-size: 1.2em;
+            text-indent: 2em;
+            text-align: left;
+            padding-top: 2em;
+            padding-bottom: 2em;
+            line-height: 1.8em;
+        }
+
+        .box-card .card-header {
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .box-card h1 {
+            font-size: 3em;
+        }
+    </style>
+{% endblock %}

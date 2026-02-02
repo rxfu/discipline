@@ -1,0 +1,479 @@
+{% extends 'admin/base_site.html' %}
+{% load static indicator_extras %}
+{% block content %}
+    {{ block.super }}
+    <div id="content-main">
+        <div class="module">
+            <el-card class="box-card">
+                <div slot="header" class="card-header clearfix">
+                    <h1>{{ title }}</h1>
+                </div>
+                <article>
+                    <!-- 搜索表单 -->
+                    <div class="search-form"
+                         style="padding: 20px; background: #f8f9fa; margin-bottom: 20px; border-radius: 5px;">
+                        <form method="get">
+                            <div style="display: flex; gap: 15px; align-items: end; flex-wrap: wrap;">
+                                <div>
+                                    <label for="search-input"
+                                           style="display: block; margin-bottom: 5px; font-weight: bold;">搜索学科数据:</label>
+                                    <input
+                                            type="text"
+                                            id="search-input"
+                                            name="q"
+                                            value="{{ search_query }}"
+                                            placeholder="输入学科数据内容..."
+                                            style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 250px;"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="indicator-select"
+                                           style="display: block; margin-bottom: 5px; font-weight: bold;">归属指标:</label>
+                                    <select
+                                            id="indicator-select"
+                                            name="indicator"
+                                            style="border: 1px solid #ddd; border-radius: 4px; width: 200px;"
+                                    >
+                                        <option value="">所有指标</option>
+                                        {% for indicator in indicators %}
+                                            <option value="{{ indicator.code }}"
+                                                    {% if selected_indicator == indicator.code|stringformat:"s" %}selected{% endif %}>
+                                                [{{ indicator.code }}] {{ indicator.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="primary_subject-select"
+                                           style="display: block; margin-bottom: 5px; font-weight: bold;">归属一级学科:</label>
+                                    <select
+                                            id="primary_subject-select"
+                                            name="primary_subject"
+                                            style="border: 1px solid #ddd; border-radius: 4px; width: 200px;"
+                                    >
+                                        <option value="">所有一级学科</option>
+                                        {% for primary_subject in primary_subjects %}
+                                            <option value="{{ primary_subject.code }}"
+                                                    {% if selected_primary_subject == primary_subject.code|stringformat:"s" %}selected{% endif %}>
+                                                [{{ primary_subject.code }}] {{ primary_subject.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="secondary_subject-select"
+                                           style="display: block; margin-bottom: 5px; font-weight: bold;">归属二级学科:</label>
+                                    <select
+                                            id="secondary_subject-select"
+                                            name="secondary_subject"
+                                            style="border: 1px solid #ddd; border-radius: 4px; width: 200px;"
+                                    >
+                                        <option value="">所有二级学科</option>
+                                        {% for secondary_subject in secondary_subjects %}
+                                            <option value="{{ secondary_subject.code }}"
+                                                    {% if selected_secondary_subject == secondary_subject.code|stringformat:"s" %}selected{% endif %}>
+                                                [{{ secondary_subject.code }}] {{ secondary_subject.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="level-select"
+                                           style="display: block; margin-bottom: 5px; font-weight: bold;">归属级别:</label>
+                                    <select
+                                            id="level-select"
+                                            name="level"
+                                            style="border: 1px solid #ddd; border-radius: 4px; width: 200px;"
+                                    >
+                                        <option value="">所有级别</option>
+                                        {% for level in levels %}
+                                            <option value="{{ level.id }}"
+                                                    {% if selected_level == level.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ level.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="year-select"
+                                           style="display: block; margin-bottom: 5px; font-weight: bold;">归属年份:</label>
+                                    <select
+                                            id="year-select"
+                                            name="year"
+                                            style="border: 1px solid #ddd; border-radius: 4px; width: 200px;"
+                                    >
+                                        <option value="">所有年份</option>
+                                        {% for year in years %}
+                                            <option value="{{ year.year }}"
+                                                    {% if selected_year == year.year|stringformat:"s" %}selected{% endif %}>
+                                                {{ year.year }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <button
+                                            type="submit"
+                                            style="padding: 9px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;"
+                                    >
+                                        搜索
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 搜索结果统计 -->
+                    {% if page_data %}
+                        <div style="margin-bottom: 15px; padding: 10px; background: #e9ecef; border-radius: 4px;">
+                            共找到 <strong>{{ data|length }}</strong> 条数据
+                            {% if search_query %}，搜索关键词: <strong>{{ search_query }}</strong>{% endif %}
+                            {% if selected_indicator %}
+                                {% for indicator in indicators %}
+                                    {% if selected_indicator == indicator.code|stringformat:"s" %}
+                                        ，归属指标: <strong>{{ indicator.name }}</strong>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            {% if selected_primary_subject %}
+                                {% for primary_subject in primary_subjects %}
+                                    {% if selected_primary_subject == primary_subject.code|stringformat:"s" %}
+                                        ，归属一级学科: <strong>{{ primary_subject.name }}</strong>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            {% if selected_secondary_subject %}
+                                {% for secondary_subject in secondary_subjects %}
+                                    {% if selected_secondary_subject == secondary_subject.code|stringformat:"s" %}
+                                        ，归属二级学科: <strong>{{ secondary_subject.name }}</strong>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            {% if selected_level %}
+                                {% for level in levels %}
+                                    {% if selected_level == level.id|stringformat:"s" %}
+                                        ，归属级别: <strong>{{ level.name }}</strong>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            {% if selected_year %}
+                                {% for year in years %}
+                                    {% if selected_year == year|stringformat:"s" %}
+                                        ，归属年份: <strong>{{ year }}</strong>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            <dl>
+                                <dt>归属指标：</dt>
+                                <dd>
+                                    {% for count in indicator_counts %}
+                                        <span class="item">
+                                    <b>{{ count.indicator__name }}：</b>
+                                    {{ count.indicator_count }}条；
+                                </span>
+                                    {% endfor %}
+                                </dd>
+                                <dt>归属一级学科：</dt>
+                                <dd>
+                                    {% for count in primary_subject_counts %}
+                                        <span class="item">
+                                    <b>{{ count.primary_subject__name }}：</b>
+                                    {{ count.primary_subject_count }}条；
+                                </span>
+                                    {% endfor %}
+                                </dd>
+                                <dt>归属二级学科：</dt>
+                                <dd>
+                                    {% for count in secondary_subject_counts %}
+                                        <span class="item">
+                                    <b>{{ count.secondary_subject__name }}：</b>
+                                    {{ count.secondary_subject_count }}条；
+                                </span>
+                                    {% endfor %}
+                                </dd>
+                                <dt>归属级别：</dt>
+                                <dd>
+                                    {% for count in level_counts %}
+                                        <span class="item">
+                                    <b>{{ count.level__name }}：</b>
+                                    {{ count.level_count }}条；
+                                </span>
+                                    {% endfor %}
+                                </dd>
+                                <dt>归属年份：</dt>
+                                <dd>
+                                    {% for count in year_counts %}
+                                        <span class="item">
+                                    <b>{{ count.year }}：</b>
+                                    {{ count.year_count }}条；
+                                </span>
+                                    {% endfor %}
+                                </dd>
+                            </dl>
+                        </div>
+
+                        <!-- 结果表格 -->
+                        <table id="result_list" class="data-table">
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">数据名称</th>
+                                <th scope="col">归属指标</th>
+                                <th scope="col">归属一级学科</th>
+                                <th scope="col">归属二级学科</th>
+                                <th scope="col">归属年份</th>
+                                <th scope="col">归属级别</th>
+                                <th scope="col">主要负责人</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for d in page_data %}
+                                <tr class="{% cycle 'row1' 'row2' %}">
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ d.name }}</td>
+                                    <td>{{ d.indicator.name }}</td>
+                                    <td>{{ d.primary_subject.name }}</td>
+                                    <td>{{ d.secondary_subject.name }}</td>
+                                    <td>{{ d.year }}</td>
+                                    <td>{{ d.level.name }}</td>
+                                    <td>{{ d.teacher.name }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8">暂无匹配的学科数据</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <!-- 分页控件 -->
+                        {% if page_data.has_other_pages %}
+                            <div class="pagination-wrapper">
+                                <!-- 每页记录数选择器 -->
+                                <div class="per-page-selector">
+                                    <form method="GET" id="per-page-form">
+                                        <label for="per_page">每页显示:</label>
+                                        <select name="per_page" id="per_page">
+                                            {% for option in per_page_options %}
+                                                <option value="{{ option }}"
+                                                        {% if option == current_per_page %}selected{% endif %}>
+                                                    {{ option }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+
+                                        <!-- 保留当前页码参数 -->
+                                        {% if page_data.number %}
+                                            <input type="hidden" name="page" value="{{ page_data.number }}">
+                                        {% endif %}
+                                    </form>
+                                </div>
+                                <div class="pagination">
+                                    {% if page_data.has_previous %}
+                                        <a href="?page=1&per_page={{ current_per_page }}">&laquo; 首页</a>
+                                        <a href="?page={{ page_data.previous_page_number }}&per_page={{ current_per_page }}">‹
+                                            上一页</a>
+                                    {% else %}
+                                        <span class="disabled">&laquo; 首页</span>
+                                        <span class="disabled">‹ 上一页</span>
+                                    {% endif %}
+
+                                    {% for num in page_data.paginator.page_range %}
+                                        {% if page_data.number == num %}
+                                            <span class="current">{{ num }}</span>
+                                        {% elif num > page_data.number|add:'-3' and num < page_data.number|add:'3' %}
+                                            <a href="?page={{ num }}&per_page={{ current_per_page }}">{{ num }}</a>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if page_data.has_next %}
+                                        <a href="?page={{ page_data.next_page_number }}&per_page={{ current_per_page }}">下一页
+                                            ›</a>
+                                        <a href="?page={{ page_data.paginator.num_pages }}&per_page={{ current_per_page }}">末页
+                                            &raquo;</a>
+                                    {% else %}
+                                        <span class="disabled">下一页 ›</span>
+                                        <span class="disabled">末页 &raquo;</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- 页面信息 -->
+                            <div class="page-info">
+                                第 {{ page_data.number }} 页，共 {{ page_data.paginator.num_pages }} 页
+                                （共 {{ page_data.paginator.count }} 条记录，每页 {{ current_per_page }} 条）
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <p>暂无数据可显示。</p>
+                    {% endif %}
+                </article>
+            </el-card>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+    <script>
+        // 自动提交表单当选择每页记录数改变时
+        document.getElementById('per_page').addEventListener('change', function () {
+            document.getElementById('per-page-form').submit();
+        });
+    </script>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        #content-main article {
+            font-size: 1em;
+            text-align: left;
+            padding-top: 2em;
+            padding-bottom: 2em;
+            line-height: 1.8em;
+        }
+
+        .box-card .card-header {
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .box-card h1 {
+            font-size: 3em;
+        }
+
+        .box-card table thead tr th {
+            font-size: 1em;
+            font-weight: bold;
+        }
+
+        .box-card .item {
+            display: inline-block;
+        }
+
+        dl {
+        {#display: flex;#} flex-wrap: wrap;
+            margin: 0;
+            padding: 0;
+        }
+
+        dt {
+            flex: 0 0 auto;
+            min-width: 150px; /* 设置dt的最小宽度 */
+            margin: 0 10px 10px 0;
+            font-weight: bold;
+        }
+
+        dd {
+            margin: 0 0 10px 0;
+            min-width: 200px; /* 设置dd的最小宽度 */
+            flex: 1 1 auto;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #4e73df;
+        }
+
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /*margin: 30px 0;*/
+            flex-wrap: wrap;
+        }
+
+        .per-page-selector {
+            display: flex;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .per-page-selector label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .per-page-selector select {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .per-page-selector button {
+            padding: 5px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .per-page-selector button:hover {
+            background-color: #0056b3;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /*margin: 30px 0;*/
+            flex-wrap: wrap;
+        }
+
+        .pagination a, .pagination span {
+            color: #007bff;
+            padding: 8px 16px;
+            text-decoration: none;
+            border: 1px solid #dee2e6;
+            margin: 0 4px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .pagination a:hover:not(.current) {
+            background-color: #e9ecef;
+        }
+
+        .pagination .current {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .pagination .disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .page-info {
+            text-align: center;
+            margin: 20px 0;
+            color: #6c757d;
+        }
+    </style>
+{% endblock %}

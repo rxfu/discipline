@@ -1,0 +1,171 @@
+{% extends 'admin/base_site.html' %}
+{% load static indicator_extras %}
+{% block content %}
+    {{ block.super }}
+    <div id="content-main">
+        <div class="module">
+            <el-card class="box-card">
+                <div slot="header" class="card-header clearfix">
+                    <h1>{{ title }}</h1>
+                </div>
+                <article>
+                    <!-- 控制面板 -->
+                    <div class="chart-controls">
+                        <form method="get" id="chartForm"
+                              style="padding: 20px; background: #f8f9fa; margin-bottom: 20px; border-radius: 5px;">
+                            <div class="control-group">
+                                <label for="subject">一级学科:</label>
+                                <select name="subject" id="subject" onchange="this.form.submit()">
+                                    {% for subject in subjects %}
+                                        <option value="{{ subject.code }}"
+                                                {% if selected_subject == subject.code %}selected{% endif %}>
+                                            {{ subject.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(255, 99, 132, 1);"></div>
+                            <span>人才培养</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(54, 162, 235, 1);"></div>
+                            <span>平台项目</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(255, 205, 86, 1);"></div>
+                            <span>成果获奖</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(75, 192, 192, 1);"></div>
+                            <span>学术论文</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(153, 102, 255, 1);"></div>
+                            <span>高端人才</span>
+                        </div>
+                    </div>
+
+                    <!-- 统计图 -->
+                    <canvas id="myChart" width="400" height="180"></canvas>
+                </article>
+            </el-card>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+    {{ chart_data|json_script:"chart-data" }}
+    <script>
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+        /*const years = */
+        /*const counts = */
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: JSON.parse(chartData),
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        /* position: 'top', */
+                        display: false, // 使用自定义图例
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '数据量',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: '年份',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'js/chart.umd.min.js' %}"></script>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        #content-main p {
+            font-size: 1.2em;
+            text-indent: 2em;
+            text-align: left;
+            padding-top: 2em;
+            padding-bottom: 2em;
+            line-height: 1.8em;
+        }
+
+        .box-card .card-header {
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .box-card h1 {
+            font-size: 3em;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            border-radius: 2px;
+        }
+    </style>
+{% endblock %}

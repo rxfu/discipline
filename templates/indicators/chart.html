@@ -1,0 +1,153 @@
+{% extends 'admin/base_site.html' %}
+{% load static indicator_extras %}
+{% block content %}
+    {{ block.super }}
+    <div id="content-main">
+        <div class="module">
+            <el-card class="box-card">
+                <div slot="header" class="card-header clearfix">
+                    <h1>{{ title }}</h1>
+                </div>
+                <article>
+                    <!-- 控制面板 -->
+                    <div class="chart-controls">
+                        <form method="get" id="chartForm"
+                              style="padding: 20px; background: #f8f9fa; margin-bottom: 20px; border-radius: 5px;">
+                            <div class="control-group">
+                                <label for="subject">一级学科:</label>
+                                <select name="subject" id="subject" onchange="this.form.submit()">
+                                    {% for subject in subjects %}
+                                        <option value="{{ subject.code }}"
+                                                {% if selected_subject == subject.code %}selected{% endif %}>
+                                            {{ subject.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- 统计图 -->
+                    <canvas id="myChart" width="400" height="100"></canvas>
+                </article>
+            </el-card>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footer %}
+    {{ block.super }}
+    <script>
+        function calculateTrendLine(dataPoints, type = 'linear') {
+            const n = dataPoints.length;
+
+            if (type === 'linear') {
+                // 线性回归
+                let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+
+                for (let i = 0; i < n; i++) {
+                    sumX += i;
+                    sumY += dataPoints[i];
+                    sumXY += i * dataPoints[i];
+                    sumXX += i * i;
+                }
+
+                const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+                const intercept = (sumY - slope * sumX) / n;
+
+                return dataPoints.map((_, i) => ({
+                    x: i,
+                    y: slope * i + intercept
+                }));
+            }
+
+            // 可以添加其他类型的趋势线计算，如指数、对数等
+            return dataPoints;
+        }
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const years = {{ years|safe }};
+        const counts = {{ counts|safe }};
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: '数据量',
+                    data: counts,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }, {
+                    type: 'line',
+                    label: '趋势线',
+                    data: calculateTrendLine(counts),
+                    borderColor: 'red',
+                    borderWidth: 2,
+                    {#borderDash: [5, 5],#}
+                    fill: false,
+                    pointRadius: 0,
+                    tension: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '学科数据与趋势分析',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'js/chart.umd.min.js' %}"></script>
+{% endblock %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        #content-main p {
+            font-size: 1.2em;
+            text-indent: 2em;
+            text-align: left;
+            padding-top: 2em;
+            padding-bottom: 2em;
+            line-height: 1.8em;
+        }
+
+        .box-card .card-header {
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .box-card h1 {
+            font-size: 3em;
+        }
+    </style>
+{% endblock %}
